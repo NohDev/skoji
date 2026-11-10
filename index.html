@@ -1,4 +1,333 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="utf-8"><title>Skoji</title>
-<meta http-equiv="refresh" content="0; url=confidentialite.html"></head>
-<body><a href="confidentialite.html">Skoji – Confidentialité / Privacy</a></body></html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Skoji · Le jeu de cartes où le plus petit score gagne</title>
+<meta name="description" content="Skoji, le jeu de cartes rétro pour iPhone et iPad : retourne, échange, fais pouf ! Solo contre des bots, en ligne avec Game Center ou en SharePlay. Gratuit.">
+<meta name="theme-color" content="#E6CF9F">
+<meta property="og:title" content="Skoji · Jeu de cartes">
+<meta property="og:description" content="Retourne, échange, fais pouf ! Le jeu de cartes rétro où le plus petit score gagne.">
+<meta property="og:image" content="https://nohdev.github.io/skoji/img/icon.png">
+<link rel="icon" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<style>
+@font-face{font-family:"Luckiest Guy";src:url(fonts/LuckiestGuy-Regular.ttf) format("truetype");font-display:swap}
+@font-face{font-family:"Fredoka";src:url(fonts/Fredoka-Variable.ttf) format("truetype");font-weight:300 700;font-display:swap}
+:root{
+  --ink:#2A1E16; --paper:#F6EAD0; --kraft:#E6CF9F; --kraft-dark:#D9BD85;
+  --navy:#2D4F93; --sky:#7FC2D6; --green:#6A9E3A; --mustard:#E8AE2F; --tomato:#D0472E; --brick:#B8352A; --night:#1E3466;
+  --soft:#5E4A38;
+  --display:"Luckiest Guy", "Fredoka", ui-rounded, system-ui, sans-serif;
+  --body:"Fredoka", ui-rounded, system-ui, -apple-system, sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px;-webkit-text-size-adjust:100%}
+body{margin:0;color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.55;font-weight:500;overflow-x:hidden;
+  background:
+    radial-gradient(circle, rgba(42,30,22,.07) 1.4px, transparent 1.6px) 0 0/18px 18px,
+    var(--kraft)}
+::selection{background:var(--mustard);color:var(--ink)}
+:focus-visible{outline:3px solid var(--tomato);outline-offset:3px;border-radius:10px}
+a{color:var(--brick);text-underline-offset:3px;text-decoration-thickness:2px}
+img{max-width:100%;display:block}
+h1,h2,h3{font-family:var(--display);font-weight:400;line-height:1;margin:0;letter-spacing:.01em;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+.wrap{max-width:1140px;margin:0 auto;padding:0 20px}
+
+/* Objets « carton » : contour encre + ombre portée franche (le monde de l'app) */
+.box{background:var(--paper);border:3px solid var(--ink);border-radius:24px;box-shadow:6px 6px 0 var(--ink)}
+
+/* Barre du haut */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--kraft) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:3px solid var(--ink)}
+.top .wrap{display:flex;align-items:center;gap:14px;height:68px}
+.logo-sm{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--tomato);font-family:var(--display);font-size:30px;line-height:1;padding-top:4px;
+  -webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink)}
+.logo-sm img{width:40px;height:40px;border-radius:11px;border:2.5px solid var(--ink)}
+.top nav{margin-left:auto;display:flex;gap:4px}
+.top nav a{color:var(--ink);text-decoration:none;font-weight:700;padding:8px 14px;border-radius:999px}
+.top nav a:hover{background:var(--paper)}
+@media (max-width:820px){ .top nav{display:none} .logo-sm{margin-right:auto} }
+
+.btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--body);font-weight:700;font-size:18px;text-decoration:none;cursor:pointer;
+  padding:13px 22px;border-radius:16px;border:3px solid var(--ink);color:#fff;background:var(--tomato);box-shadow:4px 4px 0 var(--ink);
+  transition:transform .1s, box-shadow .1s}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.btn:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--ink)}
+.btn.small{padding:8px 14px;font-size:16px;border-radius:13px;box-shadow:3px 3px 0 var(--ink)}
+.btn.alt{background:var(--navy)}
+.btn svg{width:20px;height:20px}
+
+/* Héros : affiche rétro à rayons */
+.hero{position:relative;overflow:hidden;border-bottom:3px solid var(--ink);
+  background:repeating-conic-gradient(from 0deg at 50% 62%, #ECD7A8 0deg 9deg, #E2C68E 9deg 18deg)}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:center;padding-top:48px;padding-bottom:64px}
+.fan{position:relative;height:178px;width:min(100%,400px);margin:0 0 -6px}
+.card{position:absolute;bottom:0;left:50%;width:96px;height:138px;margin-left:-48px;border:3.5px solid var(--ink);border-radius:15px;
+  display:grid;place-items:center;font-family:var(--display);font-size:46px;line-height:1;color:var(--paper);padding-top:8px;
+  -webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--ink);
+  box-shadow:4px 4px 0 var(--ink);transform-origin:50% 120%;
+  background:repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,.13) 0deg 10deg, transparent 10deg 20deg), var(--c)}
+.card::before,.card::after{content:attr(data-v);position:absolute;font-size:17px;-webkit-text-stroke:1px var(--ink);text-shadow:1px 1px 0 var(--ink)}
+.card::before{top:9px;left:10px}.card::after{bottom:7px;right:10px;transform:rotate(180deg)}
+.card:nth-child(1){--c:var(--navy);transform:translateX(-102px) rotate(-18deg)}
+.card:nth-child(2){--c:var(--sky);transform:translateX(-34px) rotate(-6deg)}
+.card:nth-child(3){--c:var(--mustard);transform:translateX(34px) rotate(6deg)}
+.card:nth-child(4){--c:var(--tomato);transform:translateX(102px) rotate(18deg)}
+@media (prefers-reduced-motion: no-preference){
+  /* Les cartes se déploient en éventail depuis le paquet (visibles dès le départ, sans délai). */
+  .card{animation:deal .7s cubic-bezier(.16,1,.3,1)}
+  .card:nth-child(2){animation-duration:.8s}.card:nth-child(3){animation-duration:.9s}.card:nth-child(4){animation-duration:1s}
+  @keyframes deal{from{transform:translateY(24px) rotate(0deg)}}
+  .koji{animation:wave 2.4s ease-in-out 1.2s infinite}
+  @keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg) translateY(-4px)}}
+}
+.wordmark{font-size:clamp(84px,13vw,150px);color:var(--tomato);-webkit-text-stroke:5px var(--ink);paint-order:stroke fill;text-shadow:7px 7px 0 var(--ink);
+  transform:rotate(-3deg);padding-top:.08em;margin-left:-4px}
+.tagline{font-family:var(--display);font-size:clamp(26px,3.2vw,36px);margin-top:22px;color:var(--navy)}
+.hero .lead{font-size:20px;margin:16px 0 28px;max-width:34ch;font-weight:500}
+.ctas{display:flex;flex-wrap:wrap;gap:14px 16px;align-items:center}
+.small-note{font-size:15px;font-weight:600;color:var(--soft)}
+.stage{position:relative;justify-self:center}
+.phone{width:min(74vw,300px);aspect-ratio:1320/2868;border:4px solid var(--ink);border-radius:46px;padding:9px;background:var(--ink);box-shadow:10px 10px 0 rgba(42,30,22,.85);transform:rotate(3deg)}
+.phone img{width:100%;height:100%;object-fit:cover;border-radius:36px}
+.koji{position:absolute;left:-92px;bottom:40px;width:150px;transform-origin:50% 100%}
+.bubble{position:absolute;left:-150px;bottom:196px;max-width:220px;padding:12px 16px;font-weight:700;font-size:16px;line-height:1.3}
+.bubble::after{content:"";position:absolute;left:62px;bottom:-14px;width:22px;height:22px;background:var(--paper);border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(45deg)}
+@media (max-width:560px){ .fan{transform:scale(.8);transform-origin:50% 100%;margin-bottom:-24px} }
+@media (max-width:900px){
+  .hero .wrap{grid-template-columns:1fr;gap:64px;padding-top:32px}
+  .koji{left:-40px;width:118px;bottom:20px}
+  .bubble{left:-28px;bottom:150px;max-width:190px;font-size:15px}
+}
+
+/* Sections */
+section{padding:80px 0}
+.sec-title{font-size:clamp(40px,5.4vw,64px);color:var(--ink)}
+.sec-title .red{color:var(--tomato);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--ink)}
+.sec-lead{font-size:20px;margin-top:16px;max-width:52ch;color:var(--soft);font-weight:500}
+
+/* Règles */
+.rules{display:grid;grid-template-columns:1.2fr .8fr;gap:44px;align-items:center;margin-top:44px}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:16px}
+.steps li{display:grid;grid-template-columns:54px 1fr;gap:16px;align-items:start;padding:18px 20px}
+.steps .n{width:54px;height:54px;border:3px solid var(--ink);border-radius:14px;display:grid;place-items:center;font-family:var(--display);font-size:28px;padding-top:4px;color:var(--paper);
+  -webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;box-shadow:3px 3px 0 var(--ink)}
+.steps h3{font-size:24px;margin-top:4px}
+.steps p{margin-top:4px;color:var(--soft)}
+.pouf{color:var(--tomato)}
+.shot{width:min(100%,290px);justify-self:center;aspect-ratio:1320/2400;border:4px solid var(--ink);border-radius:36px;overflow:hidden;box-shadow:8px 8px 0 var(--ink);background:var(--ink)}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:top}
+@media (max-width:860px){ .rules{grid-template-columns:1fr} }
+
+/* Modes de jeu */
+.modes{background:var(--navy);color:var(--paper);border-block:3px solid var(--ink);
+  background-image:repeating-conic-gradient(from 0deg at 85% 0%, rgba(255,255,255,.05) 0deg 8deg, transparent 8deg 16deg)}
+.modes .sec-title{color:var(--paper)}
+.modes .sec-lead{color:#D8E1F3}
+.mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px}
+.mode{padding:26px 24px;color:var(--ink)}
+.mode .ico{width:58px;height:58px;border:3px solid var(--ink);border-radius:16px;display:grid;place-items:center;box-shadow:3px 3px 0 var(--ink);margin-bottom:16px}
+.mode .ico svg{width:30px;height:30px}
+.mode h3{font-size:28px}
+.mode p{margin-top:8px;color:var(--soft)}
+@media (max-width:860px){ .mode-grid{grid-template-columns:1fr} }
+
+/* Fin de manche */
+.duo{display:grid;grid-template-columns:.8fr 1.2fr;gap:48px;align-items:center}
+.duo ul{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:12px}
+.duo li{display:flex;gap:12px;align-items:flex-start;font-weight:600}
+.tick{flex:none;width:26px;height:26px;margin-top:1px;border:2.5px solid var(--ink);border-radius:8px;background:var(--green);display:grid;place-items:center}
+.tick svg{width:15px;height:15px}
+@media (max-width:860px){ .duo{grid-template-columns:1fr} .duo .shot{order:2} }
+
+/* Boutique */
+.shop{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:40px}
+.item{padding:22px 20px;display:flex;flex-direction:column;gap:6px}
+.item h3{font-size:24px}
+.item p{color:var(--soft);font-size:16px}
+.item .price{margin-top:auto;padding-top:12px;font-family:var(--display);font-size:30px;color:var(--tomato);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;text-shadow:2px 2px 0 var(--ink)}
+.item.best{background:var(--mustard);grid-column:1/-1;flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px 20px}
+.item.best .price{margin:0 0 0 auto;padding:0}
+.item.best p{color:#4A3412}
+.note{margin-top:24px;font-weight:600;color:var(--soft);max-width:70ch}
+
+/* FAQ */
+.faq{margin-top:36px;display:grid;gap:14px;max-width:820px}
+.faq details{padding:2px 22px}
+.faq summary{cursor:pointer;list-style:none;font-weight:700;font-size:19px;padding:16px 0;display:flex;justify-content:space-between;gap:16px;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";flex:none;font-family:var(--display);font-size:30px;line-height:1;color:var(--tomato);transition:transform .25s cubic-bezier(.16,1,.3,1)}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{padding:0 0 18px;color:var(--soft);max-width:68ch}
+
+/* Fin */
+.end{text-align:center;padding:90px 0 70px;border-top:3px solid var(--ink);background:repeating-conic-gradient(from 0deg at 50% 100%, #ECD7A8 0deg 9deg, #E2C68E 9deg 18deg)}
+.end img{width:110px;height:110px;margin:0 auto 22px;border-radius:26px;border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink)}
+.end p{margin:16px auto 28px;max-width:40ch;font-size:20px}
+footer{background:var(--ink);color:var(--paper);padding:30px 0 40px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center;justify-content:space-between}
+footer nav{display:flex;flex-wrap:wrap;gap:8px 22px}
+footer a{color:var(--paper);font-weight:700;text-decoration:none}
+footer a:hover{text-decoration:underline}
+footer small{font-size:15px;opacity:.8}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-apple" viewBox="0 0 24 24"><path fill="currentColor" d="M16.4 12.6c0-2.5 2-3.6 2.1-3.7-1.2-1.7-3-1.9-3.6-2-1.5-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.8-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.8-1.1-2.8-4.3zM14 5.1c.7-.8 1.2-2 1-3.1-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.6 2.9-1.4z"/></symbol>
+    <symbol id="i-tick" viewBox="0 0 16 16"><path d="M3 8.4l3 3 7-7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bot" viewBox="0 0 32 32"><rect x="6" y="9" width="20" height="17" rx="5" fill="#F6EAD0" stroke="#2A1E16" stroke-width="2.5"/><circle cx="12.5" cy="17" r="2.4" fill="#2A1E16"/><circle cx="19.5" cy="17" r="2.4" fill="#2A1E16"/><path d="M16 9V4.5" stroke="#2A1E16" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="4" r="2" fill="#E8AE2F" stroke="#2A1E16" stroke-width="2"/><path d="M12 22h8" stroke="#2A1E16" stroke-width="2.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="#7FC2D6" stroke="#2A1E16" stroke-width="2.5"/><path d="M5 16h22M16 5c-4 4.5-4 17.5 0 22M16 5c4 4.5 4 17.5 0 22" fill="none" stroke="#2A1E16" stroke-width="2.2"/></symbol>
+    <symbol id="i-call" viewBox="0 0 32 32"><rect x="4" y="9" width="17" height="14" rx="4" fill="#F6EAD0" stroke="#2A1E16" stroke-width="2.5"/><path d="M21 14l7-4v12l-7-4z" fill="#F6EAD0" stroke="#2A1E16" stroke-width="2.5" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo-sm" href="#" aria-label="Skoji, accueil"><img src="img/icon.png" alt="" width="40" height="40">SKOJI</a>
+    <nav aria-label="Sections">
+      <a href="#regles">Règles</a>
+      <a href="#modes">Modes</a>
+      <a href="#boutique">Boutique</a>
+      <a href="#questions">Questions</a>
+    </nav>
+    <a class="btn small" href="#jouer"><svg aria-hidden="true"><use href="#i-apple"/></svg>iPhone</a>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <div class="fan" aria-hidden="true">
+          <div class="card" data-v="-2">-2</div>
+          <div class="card" data-v="0">0</div>
+          <div class="card" data-v="7">7</div>
+          <div class="card" data-v="12">12</div>
+        </div>
+        <h1 class="wordmark">Skoji</h1>
+        <p class="tagline">Retourne, échange, fais pouf&nbsp;!</p>
+        <p class="lead">Le jeu de cartes qui met l'ambiance à l'apéro. Des parties rapides, faciles à apprendre, et un seul but : finir avec le plus petit score.</p>
+        <div class="ctas" id="jouer">
+          <a class="btn" href="#regles"><svg aria-hidden="true"><use href="#i-apple"/></svg>Bientôt sur l'App Store</a>
+          <span class="small-note">Gratuit · iPhone et iPad</span>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="phone"><img src="img/3-partie.jpg" alt="Une partie de Skoji : les grilles de Mamie Rosa et Gaston en haut, la pioche et la défausse au milieu, ta grille de 12 cartes en bas." width="1320" height="2868" fetchpriority="high"></div>
+        <p class="bubble box">Moins tu as de points, plus tu gagnes&nbsp;!</p>
+        <svg class="koji" viewBox="0 0 150 170" role="img" aria-label="Koji, la carte mascotte, fait coucou">
+          <path d="M26 92 C10 74 8 52 18 34" fill="none" stroke="#2A1E16" stroke-width="7" stroke-linecap="round"/>
+          <circle cx="19" cy="30" r="12" fill="#F6EAD0" stroke="#2A1E16" stroke-width="6"/>
+          <path d="M124 108 C138 116 142 128 140 140" fill="none" stroke="#2A1E16" stroke-width="7" stroke-linecap="round"/>
+          <circle cx="140" cy="146" r="11" fill="#F6EAD0" stroke="#2A1E16" stroke-width="6"/>
+          <rect x="30" y="52" width="94" height="114" rx="16" fill="#B8352A" stroke="#2A1E16" stroke-width="7"/>
+          <rect x="40" y="62" width="74" height="94" rx="9" fill="none" stroke="#F6EAD0" stroke-width="4"/>
+          <circle cx="62" cy="98" r="11" fill="#fff" stroke="#2A1E16" stroke-width="5"/>
+          <circle cx="94" cy="98" r="11" fill="#fff" stroke="#2A1E16" stroke-width="5"/>
+          <path d="M62 98 L62 87 A11 11 0 0 1 71 102 Z" fill="#2A1E16"/>
+          <path d="M94 98 L94 87 A11 11 0 0 1 103 102 Z" fill="#2A1E16"/>
+          <path d="M58 120 Q77 140 98 120 Z" fill="#2A1E16" stroke="#2A1E16" stroke-width="4" stroke-linejoin="round"/>
+          <rect x="72" y="121" width="12" height="6" rx="2" fill="#E8AE2F"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <section id="regles">
+    <div class="wrap">
+      <h2 class="sec-title">Tu sais jouer en <span class="red">2 minutes</span></h2>
+      <p class="sec-lead">Koji t'explique tout dans un tutoriel interactif. Voilà l'essentiel.</p>
+      <div class="rules">
+        <ol class="steps">
+          <li class="box"><span class="n" style="background:var(--navy)">1</span><div><h3>12 cartes cachées</h3><p>Ta grille compte 12 cartes face cachée, de −2 à 12. Tu en retournes deux pour commencer.</p></div></li>
+          <li class="box"><span class="n" style="background:var(--sky)">2</span><div><h3>Pioche ou défausse</h3><p>À ton tour, prends une carte et échange-la avec une des tiennes… ou jette-la et retourne une carte cachée.</p></div></li>
+          <li class="box"><span class="n" style="background:var(--green)">3</span><div><h3><span class="pouf">Pouf&nbsp;!</span> la colonne s'envole</h3><p>Trois cartes identiques dans une colonne ? Elle disparaît, et ses points avec.</p></div></li>
+          <li class="box"><span class="n" style="background:var(--mustard)">4</span><div><h3>Dernier tour, gare au double</h3><p>Quand quelqu'un a tout retourné, chacun joue une dernière fois. S'il n'a pas le plus petit score, ses points sont doublés. À 100 points, le plus petit total gagne.</p></div></li>
+        </ol>
+        <div class="shot"><img src="img/2-pouf.jpg" alt="Koji annonce « POUF ! Colonne envolée, zéro point ! » pendant une partie." loading="lazy" width="1320" height="2868"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="modes" id="modes">
+    <div class="wrap">
+      <h2 class="sec-title">Seul ou à plusieurs</h2>
+      <p class="sec-lead">Une partie dans le métro, ou un tournoi avec les potes du soir.</p>
+      <div class="mode-grid">
+        <div class="mode box"><div class="ico" style="background:var(--mustard)"><svg aria-hidden="true"><use href="#i-bot"/></svg></div><h3>Solo</h3><p>Affronte 1 à 3 adversaires, comme Mamie Rosa ou Gaston, en facile, moyen ou difficile. Ils ne trichent jamais : ils ne voient que ce que tu vois.</p></div>
+        <div class="mode box"><div class="ico" style="background:var(--sky)"><svg aria-hidden="true"><use href="#i-globe"/></svg></div><h3>En ligne</h3><p>Partie rapide contre des joueurs du monde entier, ou invite tes amis, jusqu'à 4. Classements Game Center : victoires et meilleure manche.</p></div>
+        <div class="mode box"><div class="ico" style="background:var(--green)"><svg aria-hidden="true"><use href="#i-call"/></svg></div><h3>SharePlay</h3><p>Lancez une partie tous ensemble pendant un appel FaceTime. Si quelqu'un s'en va, un bot prend le relais.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap duo">
+      <div class="shot"><img src="img/4-fin-de-manche.jpg" alt="Fin de manche : Gaston en tête avec 13 points, toi 18, Mamie Rosa 28 avec son score doublé." loading="lazy" width="1320" height="2868"></div>
+      <div>
+        <h2 class="sec-title">Plein de petites <span class="red">surprises</span></h2>
+        <p class="sec-lead">Un univers rétro-cartoon fait main, avec des animations, des sons et des vibrations à chaque coup.</p>
+        <ul>
+          <li><span class="tick"><svg aria-hidden="true"><use href="#i-tick"/></svg></span>Koji commente la partie et annonce les grands moments</li>
+          <li><span class="tick"><svg aria-hidden="true"><use href="#i-tick"/></svg></span>Médailles en direct et récap à chaque fin de manche</li>
+          <li><span class="tick"><svg aria-hidden="true"><use href="#i-tick"/></svg></span>iPhone, iPad et grand écran en paysage</li>
+          <li><span class="tick"><svg aria-hidden="true"><use href="#i-tick"/></svg></span>Sons, vibrations et vitesse des adversaires réglables</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="boutique">
+    <div class="wrap">
+      <h2 class="sec-title">Gratuit, avec des <span class="red">bonus</span></h2>
+      <p class="sec-lead">Skoji est gratuit, avec une seule pub en fin de partie. Les extras s'achètent une fois pour toutes, sans abonnement.</p>
+      <div class="shop">
+        <div class="item box"><h3>Pack Étoiles</h3><p>Les 13 qui espionnent, le −4 qui fait fondre ton score et les Étoiles qui complètent une colonne.</p><div class="price">1,99 €</div></div>
+        <div class="item box"><h3>Sans pub</h3><p>Plus aucune pub, jamais.</p><div class="price">2,99 €</div></div>
+        <div class="item box"><h3>Dos de cartes</h3><p>Change le look de tes cartes.</p><div class="price">0,99 €</div></div>
+        <div class="item box"><h3>Tapis de jeu</h3><p>Une nouvelle table pour tes parties.</p><div class="price">0,99 €</div></div>
+        <div class="item box best"><h3>Tout Skoji</h3><p>Tout ça d'un coup, moins cher.</p><div class="price">4,99 €</div></div>
+      </div>
+      <p class="note">Tu veux essayer avant d'acheter ? Regarde une courte vidéo et profite d'un essai gratuit. Les achats sont partagés avec le Partage familial.</p>
+    </div>
+  </section>
+
+  <section id="questions">
+    <div class="wrap">
+      <h2 class="sec-title">Questions</h2>
+      <div class="faq">
+        <details class="box"><summary>Skoji est-il vraiment gratuit ?</summary><p>Oui. Tout le jeu, en solo comme en ligne, est gratuit. Une pub s'affiche à la fin de chaque partie, jamais pendant. Les achats sont des bonus facultatifs.</p></details>
+        <details class="box"><summary>Faut-il un compte ?</summary><p>Non. Pour jouer en ligne et apparaître dans les classements, Skoji utilise simplement ton profil Game Center.</p></details>
+        <details class="box"><summary>Peut-on jouer à plusieurs sur le même téléphone ?</summary><p>Non : chacun joue sur son appareil, en ligne ou en SharePlay. En solo, tu affrontes des adversaires gérés par le jeu.</p></details>
+        <details class="box"><summary>Et sur Android ?</summary><p>Skoji est pour l'instant réservé à l'iPhone et à l'iPad.</p></details>
+        <details class="box"><summary>Comment vous contacter ?</summary><p>Écris-nous à <a href="mailto:contact@noham.eu?subject=Skoji">contact@noham.eu</a>, on répond à tous les messages.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <div class="end">
+    <div class="wrap">
+      <img src="img/icon.png" alt="" width="110" height="110" loading="lazy">
+      <h2 class="sec-title">Prêt à faire <span class="red">pouf</span>&nbsp;?</h2>
+      <p>Skoji arrive très bientôt sur l'App Store, gratuitement.</p>
+      <a class="btn alt" href="mailto:contact@noham.eu?subject=Skoji">Nous écrire</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <nav aria-label="Informations">
+      <a href="confidentialite.html">Confidentialité</a>
+      <a href="mailto:contact@noham.eu">Contact</a>
+      <a href="../">Nos autres apps</a>
+    </nav>
+    <small>© 2026 Noham Cholleton · Skoji</small>
+  </div>
+</footer>
+</body>
+</html>
